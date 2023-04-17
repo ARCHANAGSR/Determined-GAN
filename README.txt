@@ -11,3 +11,6 @@ We have done three types of data validation using CNN(step 2) in Determined AI a
 3. 30k mnist + 30k generated images. Rename 30kdata.py to data.py and 30kmnistlikedataset.npz to mnistlikedataset.npz and run the code.
 
 *For reference, we have placed partially ported CGAN code in determined at DetAI_cgan/ folder.
+
+* Hackathon ppt and video presentation is uploaded in github .
+
