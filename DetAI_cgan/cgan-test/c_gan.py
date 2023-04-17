@@ -194,7 +194,7 @@ class CGan(tf.keras.Model):
 
 
 
-    def train_step(self,batch, verbose=True):
+    def train_step(self, batch, verbose=True):
         X_train,Y_train=batch
         print("print:", batch)
         tf.print("tf.print:::::", batch)
@@ -206,29 +206,36 @@ class CGan(tf.keras.Model):
          
                 
         #idx = np.random.randint(0, X_train.shape[0], self.batch_size)
-        indx = np.random.randint(0,X_train.shape[0],self.batch_size)
-        imgs, labels = X_train[indx], Y_train[indx]
+        # indx = np.random.randint(0,X_train.shape[0],self.batch_size)
+        # imgs, labels = X_train[indx], Y_train[indx]
+
+        imgs, labels = X_train, Y_train
     
-        noise = np.random.normal(0, 1, (self.batch_size, 100))
+        noise = np.random.normal(0, 1, (784, 100))
         gen_imgs = self.generator([noise, labels])
         
-        valid = np.ones((self.batch_size, 1))
-        fake = np.zeros((self.batch_size, 1))
+        valid = np.ones((784, 1))
+        fake = np.zeros((784, 1))
         
         d_loss_real = self.discriminator([imgs, labels], valid)
         d_loss_fake = self.discriminator([gen_imgs, labels], fake)
-        d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
         
+        # d_loss = 0.5 * np.add(d_loss_real, d_loss_fake)
+        d_loss = tf.concat(tf.cast(d_loss_real, tf.int32), tf.cast(d_loss_fake, tf.int32))
+        d_loss = tf.multiply(d_loss, 0. )
+
         # Condition on labels
-        sampled_labels = np.random.randint(0, 10, self.batch_size).reshape(-1, 1)
+        sampled_labels = np.random.randint(0, 10, 784).reshape(-1, 1)
         
         # Train the generator
         g_loss = self.gan([noise, sampled_labels], valid)
 
         # Saving the Discriminator and Generator losses and accuracy for plotting
-        d_loss_plot.append(d_loss[0])
-        g_loss_plot.append(g_loss)
-        acc_plot.append(d_loss[1])
+        # commenting below code as its not initialized
+
+        # d_loss_plot.append(d_loss[0])
+        # g_loss_plot.append(g_loss)
+        # acc_plot.append(d_loss[1])
 
     
         return g_loss,d_loss

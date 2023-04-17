@@ -66,21 +66,25 @@ class CGanTrial(TFKerasTrial):
         #return ds_train
         
     def build_training_data_loader(self) -> InputData:
-        x_train,y_train = get_train_dataset(self.context.distributed.get_rank())
+        train_dataset = get_train_dataset(self.context.distributed.get_rank())
         #train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
         #train_dataset = train_dataset.shuffle(buffer_size=1024).batch(128)
         #t = (X_train,Y_train)
         #train_dataset = self.context.wrap_dataset(train_dataset)
         #return (train_dataset)
-        return(x_train,y_train)
+
+        ds = self.context.wrap_dataset(train_dataset)
+        return ds
     
     def build_validation_data_loader(self) -> InputData:
-        x_test,y_test = get_validation_dataset(self.context.distributed.get_rank())
+        test_dataset = get_validation_dataset(self.context.distributed.get_rank())
         # Prepare the validation dataset.
         #val_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
         #val_dataset = val_dataset.batch(128)
         #val_dataset = self.context.wrap_dataset(val_dataset) 
         #v = (X_test,Y_test)
         #return (val_dataset)
-        return(x_test,y_test)
+
+        ds = self.context.wrap_dataset(test_dataset)
+        return ds
     

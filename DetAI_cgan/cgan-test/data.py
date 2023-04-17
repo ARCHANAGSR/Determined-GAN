@@ -16,7 +16,8 @@ def get_train_dataset(worker_rank: int):
     
     Y_train = Y_train.reshape(-1, 1)
 
-    return X_train,Y_train
+    train_dataset = tf.data.Dataset.from_tensor_slices((X_train, Y_train)).shuffle(50000)
+    return train_dataset
 
     
 
@@ -31,7 +32,8 @@ def get_validation_dataset(worker_rank: int):
     X_test = (X_test-127.5) / 127.5
     
     Y_test = Y_test.reshape(-1, 1)
-    
-    return X_test,Y_test
+
+    test_dataset = tf.data.Dataset.from_tensor_slices((X_test, Y_test)).shuffle(50000)
+    return test_dataset
 
 
