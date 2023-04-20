@@ -79,6 +79,21 @@ det experiment create adaptive.yaml .⁠
 
 ![Training image](./DAI_integrated_cgan/images/c_gan.png)
 
+### Issues Faced
+1. Making data available in train_step along with labels.
+- usage of from_tensor_slices((x,y)) to give shuffledDataset/BatchDataset
+
+2. Working with data available in the form of Tensor in train_step.
+- modified underlying CGAN implementation to work with tensors instead of numpy array.
+  https://determined-community.slack.com/archives/C04PZL88HDL/p1681313247415169
+
+3. Saving images during train_step/test_step.
+- usage of run_eagerly=True in compile to make data available in form of numpy array.
+  https://determined-community.slack.com/archives/C04PZL88HDL/p1681927533048969
+
+4. Exporting images
+- we are still exploring on how to export data to hostfs when determined AI is running with default config.
+
 
 
 
