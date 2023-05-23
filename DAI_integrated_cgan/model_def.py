@@ -100,5 +100,5 @@ class ConditionalGANTrial(TFKerasTrial):
 
         # Wrap the validation dataset.
         ds = self.context.wrap_dataset(ds)
-        ds = ds.batch(self.context.get_per_slot_batch_size())
+        #ds = ds.batch(self.context.get_per_slot_batch_size())
         return ds
