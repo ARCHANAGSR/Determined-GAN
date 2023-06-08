@@ -15,9 +15,20 @@ import tensorflow as tf
 import numpy as np
 import imageio
 from torchvision.utils import save_image
-from tensorflow_docs.vis import embed
 from tensorflow.python.ops.numpy_ops import np_config
 from PIL import Image
+
+
+def generator_loss(fake_output):
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+    return cross_entropy(tf.ones_like(fake_output), fake_output)
+
+def discriminator_loss(real_output, fake_output):
+    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
+    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+    total_loss = real_loss + fake_loss
+    return total_loss
 
 class ConditionalGAN(keras.Model):
     def __init__(self, discriminator, generator, latent_dim, batch_size):
@@ -28,6 +39,8 @@ class ConditionalGAN(keras.Model):
         self.batch_size = batch_size
         self.gen_loss_tracker = keras.metrics.Mean(name="generator_loss")
         self.disc_loss_tracker = keras.metrics.Mean(name="discriminator_loss")
+        self.generator_loss = generator_loss
+        self.discriminator_loss = discriminator_loss
 
     @property
     def metrics(self):
@@ -118,10 +131,9 @@ class ConditionalGAN(keras.Model):
         #fake_images *= 255.0
         #converted_images = fake_images.astype(np.uint8)
         #converted_images = tf.image.resize(converted_images, (96, 96)).numpy().astype(np.uint8)
-        #for idx, img in enumerate(converted_images): 
+        #for idx, img in enumerate(converted_images):
         #
         #imageio.mimsave("/tmp/cganDiv/images/generated_image.png", fake_images)
-
         #save_image(fake_images, 'img1.png')
 
         #sess = tf.compat.v1.Session()
@@ -194,6 +206,16 @@ class ConditionalGAN(keras.Model):
         num_interpolation = 9
         start_class = 1  # @param {type:"slider", min:0, max:9, step:1}
         end_class = 5  # @param {type:"slider", min:0, max:9, step:1}
+        image_size = 28
+        num_classes = 10
+
+        image_one_hot_labels = one_hot_labels[:, :, None, None]
+        image_one_hot_labels = tf.repeat(
+            image_one_hot_labels, repeats=[image_size * image_size]
+        )
+        image_one_hot_labels = tf.reshape(
+            image_one_hot_labels, (-1, image_size, image_size, num_classes)
+        )
 
         # Sample random points in the latent space.
         print(f"Vikrant {batch_size} {self.latent_dim}")
@@ -219,6 +241,7 @@ class ConditionalGAN(keras.Model):
         print("Vikrant shapes")
         print(test_images.shape)
         print(generated_images_eval.shape)
+        print(one_hot_labels)
 
         display_list = [test_images, generated_images_eval]
         title = ["Predicted Image"]
@@ -240,8 +263,12 @@ class ConditionalGAN(keras.Model):
         print("Files in %r: %s" % (cwd, files))
 
         print(generated_images_eval.shape)
-        real_output = self.discriminator(test_images, training=False)
-        fake_output = self.discriminator(generated_images, training=False)
+        fake_image_and_labels = tf.concat([generated_images_eval, image_one_hot_labels], -1)
+        test_image_and_labels = tf.concat([test_images, image_one_hot_labels], -1)
+
+
+        real_output = self.discriminator(test_image_and_labels, training=False)
+        fake_output = self.discriminator(fake_image_and_labels, training=False)
 
         gen_loss = self.generator_loss(fake_output)
         disc_loss = self.discriminator_loss(real_output, fake_output)
